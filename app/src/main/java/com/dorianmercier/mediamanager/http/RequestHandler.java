@@ -111,13 +111,10 @@ public class RequestHandler {
         }
 
         try {
-            URL url = new URL("https://192.168.1.22:8443/get_index");
-            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+            Log.d("Just before making request", "message");
+            URL url = new URL("http://10.0.2.2:8080/get_index");
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.connect();
-            Log.d("Request response: ", urlConnection.toString());
-            Log.d("Request response content", urlConnection.getContent().toString());
-            Log.d("Error response: ", urlConnection.getErrorStream().toString());
-            Log.d("Request response input stream", urlConnection.getInputStream().toString());
             try {
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                 Log.d("Input stream: ", in.toString());
