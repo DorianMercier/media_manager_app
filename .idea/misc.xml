@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/ENSIIE/Semestre_4/project_android/media_manager_app/app/src/main/res/layout/activity_debug.xml" value="0.18802083333333333" />
+        <entry key="..\:/ENSIIE/Semestre_4/project_android/media_manager_app/app/src/main/res/layout/activity_debug.xml" value="0.33" />
+        <entry key="..\:/ENSIIE/Semestre_4/project_android/media_manager_app/app/src/main/res/layout/activity_main.xml" value="0.33" />
+        <entry key="..\:/ENSIIE/Semestre_4/project_android/media_manager_app/app/src/main/res/layout/picturesline.xml" value="0.35260416666666666" />
         <entry key="..\:/ENSIIE/Semestre_4/project_android/media_manager_app/app/src/main/res/xml/network_security_config.xml" value="0.18802083333333333" />
         <entry key="..\:/Workspace/MediaManager/app/src/main/res/layout/activity_debug.xml" value="0.33" />
         <entry key="..\:/Workspace/MediaManager/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
