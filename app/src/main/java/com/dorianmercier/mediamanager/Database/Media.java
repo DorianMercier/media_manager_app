@@ -1,6 +1,5 @@
 package com.dorianmercier.mediamanager.Database;
 
-import android.graphics.Bitmap;
 
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -28,8 +27,6 @@ public class Media {
     public boolean is_sync;
     public String hash;
 
-    @Ignore
-    Bitmap icon;
     @Ignore
     String id;
 

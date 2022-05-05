@@ -1,12 +1,17 @@
 package com.dorianmercier.mediamanager.background;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
 import androidx.room.Room;
 
 import com.dorianmercier.mediamanager.Database.AppDatabase;
+import com.dorianmercier.mediamanager.Database.Icon;
+import com.dorianmercier.mediamanager.Database.IconDAO;
 import com.dorianmercier.mediamanager.Database.Media;
 import com.dorianmercier.mediamanager.Database.MediaDAO;
+import com.dorianmercier.mediamanager.Database.Setting;
+import com.dorianmercier.mediamanager.Database.SettingDAO;
 import com.dorianmercier.mediamanager.http.RequestHandler;
 
 import java.util.ArrayList;
@@ -14,10 +19,14 @@ import java.util.ArrayList;
 public class DataManager {
     private final AppDatabase db;
     private final MediaDAO mediaDAO;
+    private final IconDAO iconDAO;
+    private final SettingDAO settingDAO;
 
     public DataManager(Context context) {
         db = Room.databaseBuilder(context, AppDatabase.class, "MediaManagerDatabase").build();
         mediaDAO = db.mediaDAO();
+        iconDAO = db.iconDAO();
+        settingDAO = db.settingDAO();
     }
 
 
@@ -34,4 +43,39 @@ public class DataManager {
             }
         }).start();
     }
+
+    public void set_setting(String name, String value) {
+        new Thread(new Runnable() {
+            public void run() {
+                settingDAO.insertAll(new Setting(name, value));
+            }
+        }).start();
+
+    }
+
+    private void save_new_icon(Icon icon) {
+        new Thread(new Runnable() {
+            public void run() {
+                if (iconDAO.getCount() < 200) {
+                    icon.last_use = (int) System.currentTimeMillis() / 1000;
+                    iconDAO.insertAll(icon);
+                } else {
+                    icon.last_use = iconDAO.get_older_id();
+                    iconDAO.update(icon);
+                }
+            }
+        }).start();
+    }
+
+    public Bitmap load_icon(int year, int month, int day, int hour, int minute, int second) {
+        Bitmap bitmap = iconDAO.getBitmap(year, month, day, hour, minute, second);
+        if(bitmap == null) {
+
+        }
+
+
+        return bitmap;
+    }
+
 }
+

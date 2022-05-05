@@ -3,9 +3,11 @@ package com.dorianmercier.mediamanager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dorianmercier.mediamanager.Database.AppDatabase;
@@ -83,6 +85,14 @@ public class DebugActivity extends AppCompatActivity {
                             final_text.append(curr_media);
                         }
                         textView.setText(final_text.toString());
+                    }
+                }).start();
+                break;
+            case R.id.buttonGetIcon:
+                new Thread(new Runnable() {
+                    public void run() {
+                        Bitmap icon = RequestHandler.get_icon(2022,6,23,15,45,57,100);
+                        ((ImageView) findViewById(R.id.iconImage)).setImageBitmap(icon);
                     }
                 }).start();
                 break;

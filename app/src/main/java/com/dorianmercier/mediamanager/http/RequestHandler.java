@@ -1,19 +1,29 @@
 package com.dorianmercier.mediamanager.http;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.JsonReader;
 import android.util.Log;
 
 import com.dorianmercier.mediamanager.Database.Media;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -114,7 +124,7 @@ public class RequestHandler {
             Log.d("Just before making request", "message");
             URL url = new URL("http://10.0.2.2:8080/get_index");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.connect();
+            //urlConnection.connect();
             try {
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                 Log.d("Input stream: ", in.toString());
@@ -127,6 +137,87 @@ public class RequestHandler {
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("Error requestIndex()", e.toString());
+            return null;
+        }
+    }
+
+    private static Bitmap readStreamIcon(InputStream in) {
+        return BitmapFactory.decodeStream(in);
+    }
+
+    public static Bitmap get_icon(int year, int month, int day, int hour, int minute, int second, int size) {
+
+        JSONObject jsonBody = new JSONObject();
+
+        try {
+            jsonBody.put("year", year);
+            jsonBody.put("month", month);
+            jsonBody.put("day", day);
+            jsonBody.put("hour", hour);
+            jsonBody.put("minute", minute);
+            jsonBody.put("second", second);
+            jsonBody.put("size", size);
+        }
+        catch(JSONException e) {
+            e.printStackTrace();
+            Log.e("Error generating JSON", e.toString());
+            return null;
+        }
+
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        try {
+            Log.d("Just before making request get_icon", "message");
+            URL url = new URL("http://10.0.2.2:8080/get_icon");
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json; utf-8");
+
+            urlConnection.setDoOutput(true);
+            urlConnection.setChunkedStreamingMode(0);
+
+            Log.d("get_icon request", "Output set");
+                /*
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bos);
+                oos.writeObject(jsonBody);
+                oos.flush();*/
+
+            //Log.d("get_icon request", "Body: " + bos);
+
+            //OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+
+            String json = jsonBody.toString();
+
+            byte[] jsonBytes = json.substring(1, json.length()-2).getBytes(StandardCharsets.UTF_8);
+
+            urlConnection.getOutputStream().write(jsonBytes);
+
+            Log.d("get_icon request", "Body set");
+
+            try {
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                return readStreamIcon(in);
+            }
+            finally {
+                urlConnection.disconnect();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("Error get_icon()", e.toString());
             return null;
         }
     }
