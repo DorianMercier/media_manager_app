@@ -183,7 +183,7 @@ public class RequestHandler {
             URL url = new URL("http://10.0.2.2:8080/get_icon");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
-            urlConnection.setRequestProperty("Content-Type", "application/json; utf-8");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
 
             urlConnection.setDoOutput(true);
             urlConnection.setChunkedStreamingMode(0);
@@ -201,15 +201,21 @@ public class RequestHandler {
 
             String json = jsonBody.toString();
 
-            byte[] jsonBytes = json.substring(1, json.length()-2).getBytes(StandardCharsets.UTF_8);
+            byte[] jsonBytes = json.getBytes(StandardCharsets.UTF_8);
 
-            urlConnection.getOutputStream().write(jsonBytes);
+            OutputStream out = urlConnection.getOutputStream();
+            out.write(jsonBytes, 0, jsonBytes.length);
 
             Log.d("get_icon request", "Body set");
 
             try {
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                 return readStreamIcon(in);
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+                Log.e("Error get_icon()", e.toString());
+                return null;
             }
             finally {
                 urlConnection.disconnect();

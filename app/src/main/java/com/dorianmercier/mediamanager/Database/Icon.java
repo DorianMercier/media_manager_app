@@ -36,7 +36,7 @@ public class Icon {
     public int last_use;
 
     @PrimaryKey(autoGenerate = true)
-    int id;
+    public int id;
 
     Bitmap bitmap;
 

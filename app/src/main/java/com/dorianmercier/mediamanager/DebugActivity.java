@@ -92,7 +92,11 @@ public class DebugActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     public void run() {
                         Bitmap icon = RequestHandler.get_icon(2022,6,23,15,45,57,100);
-                        ((ImageView) findViewById(R.id.iconImage)).setImageBitmap(icon);
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                ((ImageView) findViewById(R.id.iconImage)).setImageBitmap(icon);
+                            }
+                        });
                     }
                 }).start();
                 break;

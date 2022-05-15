@@ -12,9 +12,6 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
 
 import com.dorianmercier.mediamanager.Database.AppDatabase;
 import com.dorianmercier.mediamanager.Database.Media;
@@ -29,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     List<Media> index;
     MyRecyclerViewAdapter adapter;
     Context context;
+    AppCompatActivity activity;
 
     String[] permissions = {
             Manifest.permission.ACCESS_NETWORK_STATE,
@@ -51,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         mediaDAO = db.mediaDAO();
 
         reload(this);
+        activity = this;
     }
 
     public void buttonHandler(View view) {
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                     public void run() {
                         recyclerView.setLayoutManager(new GridLayoutManager(context, numberOfColumns));
                         Log.d("Thread status", "LayoutManager configured for recyclerView");
-                        adapter = new MyRecyclerViewAdapter(context, index, width);
+                        adapter = new MyRecyclerViewAdapter(context, index, width, activity);
                         adapter.setClickListener(listener);
                         Log.d("Thread status", "adapter configured");
                         recyclerView.setAdapter(adapter);

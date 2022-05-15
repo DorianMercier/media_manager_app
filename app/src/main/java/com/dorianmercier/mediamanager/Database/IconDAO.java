@@ -23,5 +23,5 @@ public interface IconDAO {
     void update(Icon... icon);
 
     @Query("SELECT id FROM Icon ORDER BY last_use ASC LIMIT 1")
-    int get_older_id();
+    int get_oldest_id();
 }

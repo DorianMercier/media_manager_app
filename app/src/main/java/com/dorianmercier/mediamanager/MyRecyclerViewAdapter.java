@@ -1,6 +1,8 @@
 package com.dorianmercier.mediamanager;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,9 +11,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dorianmercier.mediamanager.Database.AppDatabase;
 import com.dorianmercier.mediamanager.Database.Media;
+import com.dorianmercier.mediamanager.background.DataManager;
+import com.google.android.gms.common.internal.constants.ListAppsActivityContract;
 
 import java.util.List;
 
@@ -22,15 +28,19 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private ItemClickListener mClickListener;
     private final Context context;
     int size;
+    DataManager dataManager;
+    AppCompatActivity activity;
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<Media> data, int size) {
+    MyRecyclerViewAdapter(Context context, List<Media> data, int size, AppCompatActivity activity) {
         Log.d("MyRecyclerViewAdapter constructor", "begin");
         this.context = context;
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
         this.size = size;
-        Log.d("MyRecyclerViewAdapter constructor", "begin");
+        dataManager = new DataManager(context);
+        this.activity = activity;
+        Log.d("MyRecyclerViewAdapter constructor", "end");
     }
 
     // inflates the cell layout from xml when needed
@@ -49,13 +59,23 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         //holder.myTextView.setText(mData[position]);
         Log.d("onBindViewHolder status", "begin");
         holder.myImageView.setImageResource(R.drawable.unloadedimage);
-        Log.d("onBindViewHolder status", "icon set");
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(size/4, size/4);
-        Log.d("onBindViewHolder status", "size: " + size);
-        Log.d("onBindViewHolder status", "LayoutParams created");
         holder.myImageView.setLayoutParams(layoutParams);
-        Log.d("onBindViewHolder status", "LayoutParam set");
-        Log.d("onBindViewHolder status", "end");
+        int instant_position = position;
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap bitmap = dataManager.load_icon(mData.get(instant_position), size/4);
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        if(bitmap == null) holder.myImageView.setImageResource(R.drawable.unloadedimage);
+                        else holder.myImageView.setImageBitmap(bitmap);
+                    }
+                });
+
+            }
+        }).start();
     }
 
     // total number of cells

@@ -56,26 +56,32 @@ public class DataManager {
     private void save_new_icon(Icon icon) {
         new Thread(new Runnable() {
             public void run() {
-                if (iconDAO.getCount() < 200) {
-                    icon.last_use = (int) System.currentTimeMillis() / 1000;
+                int tmp_count = iconDAO.getCount();
+                if (tmp_count < 200) {
+                    icon.last_use = (int) (System.currentTimeMillis() / 1000);
                     iconDAO.insertAll(icon);
                 } else {
-                    icon.last_use = iconDAO.get_older_id();
+                    icon.id = iconDAO.get_oldest_id();
+                    icon.last_use = (int) (System.currentTimeMillis() / 1000);
                     iconDAO.update(icon);
                 }
             }
         }).start();
     }
 
-    public Bitmap load_icon(int year, int month, int day, int hour, int minute, int second) {
+    public Bitmap load_icon(int year, int month, int day, int hour, int minute, int second, int size) {
         Bitmap bitmap = iconDAO.getBitmap(year, month, day, hour, minute, second);
         if(bitmap == null) {
-
+            bitmap = RequestHandler.get_icon(year, month, day, hour, minute, second, size);
+            if(bitmap == null) return null;
+            Icon icon = new Icon(bitmap, year, month, day, hour, minute, second);
+            save_new_icon(icon);
         }
-
-
         return bitmap;
     }
 
+    public Bitmap load_icon(Media media, int size) {
+        return load_icon(media.year, media.month, media.day, media.hour, media.minute, media.second, size);
+    }
 }
 
