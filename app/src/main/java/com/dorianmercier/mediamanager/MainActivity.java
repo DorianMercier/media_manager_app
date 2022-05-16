@@ -1,5 +1,6 @@
 package com.dorianmercier.mediamanager;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -8,6 +9,7 @@ import androidx.room.Room;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -19,6 +21,7 @@ import com.dorianmercier.mediamanager.Database.MediaDAO;
 
 import java.util.List;
 
+@RequiresApi(api = Build.VERSION_CODES.R)
 public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
 
     AppDatabase db;
@@ -31,7 +34,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     String[] permissions = {
             Manifest.permission.ACCESS_NETWORK_STATE,
             Manifest.permission.INTERNET,
-            Manifest.permission.ACCESS_WIFI_STATE
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
     @Override

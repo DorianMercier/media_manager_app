@@ -26,6 +26,9 @@ public class Media {
     public int second;
     public boolean is_sync;
     public String hash;
+    //Only used for local medias
+    public String file_name;
+    public boolean is_local;
 
     @Ignore
     String id;

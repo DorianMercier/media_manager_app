@@ -1,7 +1,12 @@
 package com.dorianmercier.mediamanager.background;
 
+import static java.lang.Math.max;
+
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
+import android.util.DisplayMetrics;
 
 import androidx.room.Room;
 
@@ -14,19 +19,28 @@ import com.dorianmercier.mediamanager.Database.Setting;
 import com.dorianmercier.mediamanager.Database.SettingDAO;
 import com.dorianmercier.mediamanager.http.RequestHandler;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class DataManager {
     private final AppDatabase db;
     private final MediaDAO mediaDAO;
     private final IconDAO iconDAO;
     private final SettingDAO settingDAO;
+    BitmapFactory.Options option;
 
     public DataManager(Context context) {
         db = Room.databaseBuilder(context, AppDatabase.class, "MediaManagerDatabase").build();
         mediaDAO = db.mediaDAO();
         iconDAO = db.iconDAO();
         settingDAO = db.settingDAO();
+
+        option = new BitmapFactory.Options();
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        option.inScreenDensity = metrics.densityDpi;
+        option.inTargetDensity = metrics.densityDpi;
+        option.inDensity = DisplayMetrics.DENSITY_DEFAULT;
     }
 
 
@@ -37,6 +51,8 @@ public class DataManager {
                 if(index != null) {
                     mediaDAO.voidAll();
                     for(Media media : index) {
+                        media.is_sync = true;
+                        media.is_local = false;
                         mediaDAO.insertAll(media);
                     }
                 }
@@ -69,19 +85,55 @@ public class DataManager {
         }).start();
     }
 
-    public Bitmap load_icon(int year, int month, int day, int hour, int minute, int second, int size) {
-        Bitmap bitmap = iconDAO.getBitmap(year, month, day, hour, minute, second);
-        if(bitmap == null) {
-            bitmap = RequestHandler.get_icon(year, month, day, hour, minute, second, size);
-            if(bitmap == null) return null;
-            Icon icon = new Icon(bitmap, year, month, day, hour, minute, second);
-            save_new_icon(icon);
+    public Bitmap load_icon(Media media, int size) {
+        Bitmap bitmap;
+        if(media.is_sync) {
+            bitmap = iconDAO.getBitmap(media.year, media.month, media.day, media.hour, media.minute, media.second);
+            if (bitmap == null) {
+                bitmap = RequestHandler.get_icon(media.year, media.month, media.day, media.hour, media.minute, media.second, size);
+                if (bitmap == null) return null;
+                Icon icon = new Icon(bitmap, media.year, media.month, media.day, media.hour, media.minute, media.second);
+                save_new_icon(icon);
+            }
+        }
+        else {
+            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + "/DCIM/Camera/" + media.file_name, option);
+            bitmap = Bitmap.createScaledBitmap(bitmap, size, size, false);
+            int a = 0;
         }
         return bitmap;
     }
 
-    public Bitmap load_icon(Media media, int size) {
-        return load_icon(media.year, media.month, media.day, media.hour, media.minute, media.second, size);
+    // Checks if external storage is available for read and write
+    private boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        return state.equals(Environment.MEDIA_MOUNTED);
+    }
+    // Checks if external storage is available to at least read
+    private boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        return (state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY));
+    }
+
+    public void put_local_into_database() {
+
+        File directory = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera");
+        File[] files = directory.listFiles();
+
+
+        Media tmp_media;
+
+        for(File file : files) {
+            Calendar last_modified = Calendar.getInstance();
+            last_modified.setTimeInMillis(file.lastModified());
+
+            tmp_media = new Media(last_modified.get(Calendar.YEAR), last_modified.get(Calendar.MONTH), last_modified.get(Calendar.DAY_OF_MONTH), last_modified.get(Calendar.HOUR_OF_DAY), last_modified.get(Calendar.MINUTE), last_modified.get(Calendar.SECOND));
+            tmp_media.is_sync = false;
+            tmp_media.file_name = file.getName();
+            tmp_media.is_local = true;
+            mediaDAO.insertAll(tmp_media);
+        }
+
     }
 }
 

@@ -2,6 +2,7 @@ package com.dorianmercier.mediamanager;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.dorianmercier.mediamanager.Database.AppDatabase;
 import com.dorianmercier.mediamanager.Database.Media;
 import com.dorianmercier.mediamanager.background.DataManager;
@@ -26,30 +29,29 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private final List<Media> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-    private final Context context;
     int size;
     DataManager dataManager;
     AppCompatActivity activity;
+    LinearLayout.LayoutParams layoutParams;
+    Context context;
 
     // data is passed into the constructor
     MyRecyclerViewAdapter(Context context, List<Media> data, int size, AppCompatActivity activity) {
-        Log.d("MyRecyclerViewAdapter constructor", "begin");
-        this.context = context;
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
         this.size = size;
         dataManager = new DataManager(context);
         this.activity = activity;
-        Log.d("MyRecyclerViewAdapter constructor", "end");
+        layoutParams = new LinearLayout.LayoutParams(size/4, size/4);
+        this.context = context;
+
     }
 
     // inflates the cell layout from xml when needed
     @Override
     @NonNull
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d("onCreateViewHolder status", "begin");
         View view = mInflater.inflate(R.layout.recyclerview_image, parent, false);
-        Log.d("onCreateViewHolder status", "view inflated");
         return new ViewHolder(view);
     }
 
@@ -57,24 +59,36 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         //holder.myTextView.setText(mData[position]);
-        Log.d("onBindViewHolder status", "begin");
-        holder.myImageView.setImageResource(R.drawable.unloadedimage);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(size/4, size/4);
         holder.myImageView.setLayoutParams(layoutParams);
+        Glide.with(context).load(R.drawable.unloadedimage).placeholder(R.drawable.unloadedimage).into(holder.myImageView);
         int instant_position = position;
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Bitmap bitmap = dataManager.load_icon(mData.get(instant_position), size/4);
-                activity.runOnUiThread(new Runnable() {
-                    public void run() {
-                        if(bitmap == null) holder.myImageView.setImageResource(R.drawable.unloadedimage);
-                        else holder.myImageView.setImageBitmap(bitmap);
-                    }
-                });
+                Media media = mData.get(instant_position);
 
-            }
+                if(media.is_local) {
+                    activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                            Glide.with(context)
+                                    .load(Environment.getExternalStorageDirectory() + "/DCIM/Camera/"+ media.file_name)
+                                    .apply(new RequestOptions().override(size/4).centerCrop())
+                                    .into(holder.myImageView);
+                    }
+                    });
+                }
+                else {
+                    Bitmap bitmap = dataManager.load_icon(mData.get(instant_position), size/4);
+                    activity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            if(bitmap != null) {
+                                Glide.with(context).load(bitmap).into(holder.myImageView);
+                            }
+                        }
+                    });
+                }
+                }
         }).start();
     }
 
@@ -91,17 +105,13 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
         ViewHolder(View itemView) {
             super(itemView);
-            Log.d("Constructor ViewHolder status", "begin");
             myImageView = itemView.findViewById(R.id.icon_image);
             itemView.setOnClickListener(this);
-            Log.d("Constructor ViewHolder status", "end");
         }
 
         @Override
         public void onClick(View view) {
-            Log.d("onClick ViewHolder status", "begin");
             if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
-            Log.d("onClick ViewHolder status", "end");
         }
     }
 

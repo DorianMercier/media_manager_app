@@ -122,7 +122,8 @@ public class RequestHandler {
 
         try {
             Log.d("Just before making request", "message");
-            URL url = new URL("http://10.0.2.2:8080/get_index");
+            //URL url = new URL("http://10.0.2.2:8080/get_index");
+            URL url = new URL("http://192.168.137.1:8080/get_index");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             //urlConnection.connect();
             try {
@@ -180,7 +181,8 @@ public class RequestHandler {
 
         try {
             Log.d("Just before making request get_icon", "message");
-            URL url = new URL("http://10.0.2.2:8080/get_icon");
+            //URL url = new URL("http://10.0.2.2:8080/get_icon");
+            URL url = new URL("http://192.168.137.1:8080/get_icon");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");

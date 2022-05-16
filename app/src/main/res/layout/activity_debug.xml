@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonGetIcon"
+        app:layout_constraintTop_toBottomOf="@+id/buttonGetInternalStorage"
         tools:srcCompat="@tools:sample/avatars" />
 
     <Button
@@ -65,5 +65,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonDebugResetIndex" />
+
+    <Button
+        android:id="@+id/buttonGetInternalStorage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="buttonHandler"
+        android:text="get storage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonGetIcon" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

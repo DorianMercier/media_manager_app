@@ -100,6 +100,12 @@ public class DebugActivity extends AppCompatActivity {
                     }
                 }).start();
                 break;
+            case R.id.buttonGetInternalStorage:
+                new Thread(new Runnable() {
+                    public void run() {
+                        dataManager.put_local_into_database();
+                    }
+                }).start();
             default:
                 break;
 
