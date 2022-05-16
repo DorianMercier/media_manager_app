@@ -32,6 +32,8 @@ import javax.net.ssl.X509TrustManager;
 
 public class RequestHandler {
 
+    private static final String domain = "192.168.137.1:8080";
+
     private static ArrayList<Media> readStreamIndex(InputStream in) throws IOException {
         return readJsonStream(in);
     }
@@ -123,7 +125,7 @@ public class RequestHandler {
         try {
             Log.d("Just before making request", "message");
             //URL url = new URL("http://10.0.2.2:8080/get_index");
-            URL url = new URL("http://192.168.137.1:8080/get_index");
+            URL url = new URL("http://"+domain+"/get_index");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             //urlConnection.connect();
             try {
@@ -182,7 +184,7 @@ public class RequestHandler {
         try {
             Log.d("Just before making request get_icon", "message");
             //URL url = new URL("http://10.0.2.2:8080/get_icon");
-            URL url = new URL("http://192.168.137.1:8080/get_icon");
+            URL url = new URL("http://"+domain+"/get_icon");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -226,6 +228,80 @@ public class RequestHandler {
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("Error get_icon()", e.toString());
+            return null;
+        }
+    }
+
+    public static Bitmap get_picture(int year, int month, int day, int hour, int minute, int second) {
+
+        JSONObject jsonBody = new JSONObject();
+
+        try {
+            jsonBody.put("year", year);
+            jsonBody.put("month", month);
+            jsonBody.put("day", day);
+            jsonBody.put("hour", hour);
+            jsonBody.put("minute", minute);
+            jsonBody.put("second", second);
+        }
+        catch(JSONException e) {
+            e.printStackTrace();
+            Log.e("Error generating JSON", e.toString());
+            return null;
+        }
+
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        try {
+            Log.d("Just before making request get_picture", "message");
+            //URL url = new URL("http://10.0.2.2:8080/get_icon");
+            URL url = new URL("http://"+domain+"/get_picture");
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+
+            urlConnection.setDoOutput(true);
+            urlConnection.setChunkedStreamingMode(0);
+
+            Log.d("get_picture request", "Output set");
+
+            String json = jsonBody.toString();
+
+            byte[] jsonBytes = json.getBytes(StandardCharsets.UTF_8);
+
+            OutputStream out = urlConnection.getOutputStream();
+            out.write(jsonBytes, 0, jsonBytes.length);
+
+            Log.d("get_picture request", "Body set");
+
+            try {
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                return readStreamIcon(in);
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+                Log.e("Error picture request", e.toString());
+                return null;
+            }
+            finally {
+                urlConnection.disconnect();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("Error picture request", e.toString());
             return null;
         }
     }

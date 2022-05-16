@@ -4,8 +4,10 @@ package com.dorianmercier.mediamanager.Database;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 
+import java.io.Serializable;
+
 @Entity(primaryKeys = {"year", "month", "day", "hour", "minute", "second"})
-public class Media {
+public class Media implements Serializable {
 
     public Media(int year, int month, int day, int hour, int minute, int second) {
         this.year = year;
