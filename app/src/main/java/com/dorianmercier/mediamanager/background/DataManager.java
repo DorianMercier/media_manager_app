@@ -36,13 +36,16 @@ public class DataManager {
     private final MediaDAO mediaDAO;
     private final IconDAO iconDAO;
     private final SettingDAO settingDAO;
-    BitmapFactory.Options option;
+    private BitmapFactory.Options option;
+    private RequestHandler requestHandler;
+
 
     public DataManager(Context context) {
         db = Room.databaseBuilder(context, AppDatabase.class, "MediaManagerDatabase").build();
         mediaDAO = db.mediaDAO();
         iconDAO = db.iconDAO();
         settingDAO = db.settingDAO();
+        requestHandler = new RequestHandler(context);
 
         option = new BitmapFactory.Options();
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
@@ -52,10 +55,10 @@ public class DataManager {
     }
 
 
-    public void reset_index() {
-        new Thread(new Runnable() {
+    public void reset_index(boolean wait) {
+        Thread thread = new Thread(new Runnable() {
             public void run() {
-                ArrayList<Media> index = RequestHandler.requestIndex();
+                ArrayList<Media> index = requestHandler.requestIndex();
                 if(index != null) {
                     mediaDAO.voidAll();
                     for(Media media : index) {
@@ -65,7 +68,15 @@ public class DataManager {
                     }
                 }
             }
-        }).start();
+        });
+        thread.start();
+        if(wait) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void set_setting(String name, String value) {
@@ -98,7 +109,7 @@ public class DataManager {
         if(media.is_sync) {
             bitmap = iconDAO.getBitmap(media.year, media.month, media.day, media.hour, media.minute, media.second);
             if (bitmap == null) {
-                bitmap = RequestHandler.get_icon(media.year, media.month, media.day, media.hour, media.minute, media.second, size);
+                bitmap = requestHandler.get_icon(media.year, media.month, media.day, media.hour, media.minute, media.second, size);
                 if (bitmap == null) return null;
                 Icon icon = new Icon(bitmap, media.year, media.month, media.day, media.hour, media.minute, media.second);
                 save_new_icon(icon);
@@ -188,7 +199,7 @@ public class DataManager {
     }
 
     public Bitmap getPicture(Media media) {
-        return RequestHandler.get_picture(media.year, media.month, media.day, media.hour, media.minute, media.second);
+        return requestHandler.get_picture(media.year, media.month, media.day, media.hour, media.minute, media.second);
     }
 }
 

@@ -2,9 +2,11 @@ package com.dorianmercier.mediamanager;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.content.Context;
@@ -13,6 +15,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.dorianmercier.mediamanager.Database.AppDatabase;
@@ -48,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+
         if (!Utils.checkAllPermissions(this, permissions)) {
             requestPermissions(permissions, 0);
         }
@@ -60,6 +67,20 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         initiate_activity(this);
         activity = this;
         dataManager = new DataManager(context);
+
+        SwipeRefreshLayout myRefreshLayout = findViewById(R.id.swipe_container);
+        myRefreshLayout.setOnRefreshListener(
+            new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    Log.i("MainActivity", "onRefresh called from SwipeRefreshLayout");
+                    dataManager.reset_index(true);
+                    index = null;
+                    initiate_activity((MyRecyclerViewAdapter.ItemClickListener) activity);
+                    myRefreshLayout.setRefreshing(false);
+                }
+            }
+        );
     }
 
     protected void onResume() {
@@ -73,6 +94,30 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_action_bar, menu);
+        return true;
+    }
+
+    /*
     public void buttonHandler(View view) {
         switch(view.getId()) {
             case R.id.buttonDebug:
@@ -83,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 break;
         }
     }
+    */
 
     private void initiate_activity(MyRecyclerViewAdapter.ItemClickListener listener) {
         new Thread(new Runnable() {

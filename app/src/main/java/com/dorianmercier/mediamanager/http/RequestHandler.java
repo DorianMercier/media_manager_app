@@ -1,11 +1,16 @@
 package com.dorianmercier.mediamanager.http;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.JsonReader;
 import android.util.Log;
 
+import androidx.room.Room;
+
+import com.dorianmercier.mediamanager.Database.AppDatabase;
 import com.dorianmercier.mediamanager.Database.Media;
+import com.dorianmercier.mediamanager.Database.SettingDAO;
 
 
 import org.json.JSONException;
@@ -32,7 +37,25 @@ import javax.net.ssl.X509TrustManager;
 
 public class RequestHandler {
 
-    private static final String domain = "192.168.137.1:8080";
+    public static String domain = "192.168.137.1";
+    public static String port = "8080";
+
+    public RequestHandler(Context context) {
+        SettingDAO settingDAO;
+        AppDatabase db;
+        db = Room.databaseBuilder(context, AppDatabase.class, "MediaManagerDatabase").build();
+        settingDAO = db.settingDAO();
+
+        new Thread(new Runnable() {
+            public void run() {
+                String tmp_domain = settingDAO.findSetting("IP");
+                if(tmp_domain !=null) domain = tmp_domain;
+
+                String tmp_port = settingDAO.findSetting("port");
+                if(tmp_port != null) port = tmp_port;
+            }
+        }).start();
+    }
 
     private static ArrayList<Media> readStreamIndex(InputStream in) throws IOException {
         return readJsonStream(in);
@@ -125,7 +148,7 @@ public class RequestHandler {
         try {
             Log.d("Just before making request", "message");
             //URL url = new URL("http://10.0.2.2:8080/get_index");
-            URL url = new URL("http://"+domain+"/get_index");
+            URL url = new URL("http://"+domain+":"+port+"/get_index");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             //urlConnection.connect();
             try {
@@ -184,7 +207,7 @@ public class RequestHandler {
         try {
             Log.d("Just before making request get_icon", "message");
             //URL url = new URL("http://10.0.2.2:8080/get_icon");
-            URL url = new URL("http://"+domain+"/get_icon");
+            URL url = new URL("http://"+domain+":"+port+"/get_icon");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -267,7 +290,7 @@ public class RequestHandler {
         try {
             Log.d("Just before making request get_picture", "message");
             //URL url = new URL("http://10.0.2.2:8080/get_icon");
-            URL url = new URL("http://"+domain+"/get_picture");
+            URL url = new URL("http://"+domain+":"+port+"/get_picture");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");

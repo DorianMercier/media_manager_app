@@ -24,6 +24,7 @@ public class DebugActivity extends AppCompatActivity {
     private DataManager dataManager;
     private AppDatabase db;
     private MediaDAO mediaDAO;
+    private RequestHandler requestHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,7 @@ public class DebugActivity extends AppCompatActivity {
         dataManager = new DataManager(getApplicationContext());
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "MediaManagerDatabase").build();
         mediaDAO = db.mediaDAO();
+        requestHandler = new RequestHandler(getApplicationContext());
     }
 
     public void buttonHandler(View view) {
@@ -42,7 +44,7 @@ public class DebugActivity extends AppCompatActivity {
                 Log.d("buttonHandler", message);
                 new Thread(new Runnable() {
                     public void run() {
-                        ArrayList<Media> index = RequestHandler.requestIndex();
+                        ArrayList<Media> index = requestHandler.requestIndex();
                         TextView textView = findViewById(R.id.textDebug);
                         StringBuilder final_text = new StringBuilder("[\n    ");
                         String curr_media;
@@ -63,7 +65,7 @@ public class DebugActivity extends AppCompatActivity {
                 }).start();
                 break;
             case R.id.buttonDebugResetIndex:
-                dataManager.reset_index();
+                dataManager.reset_index(false);
                 break;
             case R.id.buttonDebugSeeDatabase:
                 new Thread(new Runnable() {
@@ -91,7 +93,7 @@ public class DebugActivity extends AppCompatActivity {
             case R.id.buttonGetIcon:
                 new Thread(new Runnable() {
                     public void run() {
-                        Bitmap icon = RequestHandler.get_icon(2022,6,23,15,45,57,100);
+                        Bitmap icon = requestHandler.get_icon(2022,6,23,15,45,57,100);
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 ((ImageView) findViewById(R.id.iconImage)).setImageBitmap(icon);
